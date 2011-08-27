@@ -1,0 +1,1 @@
+java -DsocksProxyHost=localhost -Xmx1024M -Xms512M -cp minecraft.jar net.minecraft.LauncherFrame
