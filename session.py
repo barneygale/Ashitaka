@@ -16,14 +16,13 @@ class Session(threading.Thread):
 		#print host
 		#print port
 		self.core = core
-		self.logger = Plugin_Log(self)
-		#self.plugins = [Plugin_Connect(self), Plugin_Log(self)]
+		#self.logger = Plugin_Log(self)
+		self.logger = None
 		self.plugins = []
 		self.plugins.append(("connect", Plugin_Connect(self)))
-		#self.plugins.append(("log", Plugin_Log(self)))
 		self.plugins.append(("chat", Plugin_Chat(self)))
 		self.plugins.append(("chat_terminal", Plugin_Chat_Terminal(self)))
-		#self.plugins.append(("respawn", Plugin_Respawn(self)))
+		self.plugins.append(("respawn", Plugin_Respawn(self)))
 		
 		self.plugin_packets = {}
 		self.plugin_messages = {}

@@ -29,7 +29,7 @@ class Plugin_Chat:
 				                 'extra': {'count': 0}}),
 			#PVP
 			('player_kill',         {'regex': '^\xa74(?P<killer>[0-9A-Za-z_]{1,16}) (?:killed|executed|took down) (?P<victim>[0-9A-Za-z_]{1,16}) using a\(n\) (?P<weapon>.*)\.$'}),
-			('player_kill',         {'regex': '^\xa74(?P<killer>[0-9A-Za-z_]{1,16}) showed (?P<victim>[0-9A-Za-z_]{1,16}) the wrong end of a\(n\) (?P<weapon>.*)\.$'}),
+			('player_kill',         {'regex': '^\xa74(?P<killer>[0-9A-Za-z_]{1,16}) showed (?P<victim>[0-9A-Za-z_]{1,16}) the (?:wrong|business) end of a\(n\) (?P<weapon>.*)\.$'}),
 			('player_kill_streak',  {'regex': '^\xa72\[(?P<player>[0-9A-Za-z_]{1,16})\] (?P<kill_streak>.*)!$'}),
 			
 			#Mod tools
@@ -81,12 +81,13 @@ class Plugin_Chat:
 			'cactus':        ['got a little too close to a cactus', 'tried to hug a cactus'],
 			'creeper':       ['hugged a creeper', 'was creeper bombed'],
 			'fall':          ['has fallen to their death', 'leaped before looking'],
-			'fire':          ['burned to death', 'just got burned'],
+			'fire':          ['burned to death', 'just got burned', 'has been set on fire'],
 			'lava':          ['became obsidian', 'tried to swim in a pool of lava'],
+			'slime':         ['was slimed'],
 			'spider':        ['was overtaken by the spiders'],
-			'water':         ['needs swimming lessons', 'forgot to come up for air'],
+			'water':         ['needs swimming lessons', 'forgot to come up for air', 'has drowned'],
 			'zombie pigman': ['lost the fight against a zombie pig'],
-			'zombie':        ['was punched to death by zombies'],
+			'zombie':        ['was punched to death by zombies', 'was left 4 dead'],
 			'unknown':       ['died from unknown causes']
 		}
 		for cause, strings in deaths.items():
@@ -136,7 +137,7 @@ class Plugin_Chat:
 					continue
 				index = characters.find(text[i])
 				width += character_widths[index+32]
-				if width > chat_width:
+				if width >= chat_width:
 					more = True
 					break
 				i+=1
