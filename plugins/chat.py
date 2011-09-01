@@ -13,14 +13,19 @@ class Plugin_Chat:
 		self.packet_buffer = []
 		
 		triplet = "\((?P<%s>[0-9\.\-]+),\s?(?P<%s>[0-9\.\-]+),\s?(?P<%s>[0-9\.\-]+)\)"
+		username = "(?:\xa7[0-9A-Za-z]{1})*(?P<%s>[0-9A-Za-z_]{1,16})(?:\xa7[0-9A-Za-z]{1})*"
 		
 		self.handlers = [
 			#Basics
-			('chat',                {'regex': '^\<(?P<player>[0-9A-Za-z_]{1,16})\> (?P<message>.*)$'}),
-			('action',              {'regex': '^\* (?P<player>[0-9A-Za-z_]{1,16}) (?P<action>.*)$'}),
-			('player_join',         {'regex': '^\xa7e(?P<player>[0-9A-Za-z_]{1,16}) joined the game\.$'}),
-			('player_quit', 	{'regex': '^\xa7e(?P<player>[0-9A-Za-z_\xa7]{1,16}) left the game\.$'}),
+			('chat',                {'regex': '^\<'+username % 'player' +'\> (?P<message>.*)$'}),
+			('action',              {'regex': '^\* '+username % 'player' +' (?P<action>.*)$'}),
+			('player_join',         {'regex': '^\xa7e'+username % 'player' +' joined the game\.$'}),
+			('player_quit', 	{'regex': '^\xa7e'+username % 'player' +' left the game\.$'}),
 			('server_message',      {'regex': '^\xa7d\[Server\] (?P<message>.*)'}),
+			('afk',                 {'regex': '^\xa77'+username % 'player' +' is now AFK$',
+			                         'extra': {'enabled': True}}),
+			('afk',                 {'regex': '^\xa77'+ username % 'player' +' is no longer AFK$',
+			                         'extra': {'enabled': False}}),
 			
 			#Mail
 			('mail_count',          {'regex': '^\xa7cYou have (?P<count>\d+) messages!\xa7f Type \xa77/mail read\xa7f to view your mail\.$',
@@ -28,25 +33,38 @@ class Plugin_Chat:
 			('mail_count',          {'regex': '^\xa77You have no new mail\.$',
 				                 'extra': {'count': 0}}),
 			#PVP
-			('player_kill',         {'regex': '^\xa74(?P<killer>[0-9A-Za-z_]{1,16}) (?:killed|executed|took down) (?P<victim>[0-9A-Za-z_]{1,16}) using a\(n\) (?P<weapon>.*)\.$'}),
-			('player_kill',         {'regex': '^\xa74(?P<killer>[0-9A-Za-z_]{1,16}) showed (?P<victim>[0-9A-Za-z_]{1,16}) the (?:wrong|business) end of a\(n\) (?P<weapon>.*)\.$'}),
-			('player_kill_streak',  {'regex': '^\xa72\[(?P<player>[0-9A-Za-z_]{1,16})\] (?P<kill_streak>.*)!$'}),
+			('player_kill',         {'regex': '^\xa74' + username % 'killer' +' (?:killed|executed|took down) '+ username % 'victim' +' using a\(n\) (?P<weapon>.*)\.$'}),
+			('player_kill',         {'regex': '^\xa74' + username % 'killer' +' showed '+ username % 'victim' +' the (?:wrong|business) end of a\(n\) (?P<weapon>.*)\.$'}),
+			('player_kill_streak',  {'regex': '^\xa72\['+ username % 'player' +'\] (?P<kill_streak>.*)!$'}),
 			
 			#Mod tools
-			('mod_broadcast',       {'regex': '^\xa7f\[\xa7cMod broadcast\xa7f - \xa7c(?:\xa7a)?(?P<player>[0-9A-Za-z_]{1,16})(?:\xa7f)+\] \xa7a(?P<message>.*)$'}),
+			('mod_broadcast',       {'regex': '^\xa7f\[\xa7cMod broadcast\xa7f - \xa7c'+ username % 'player' +'\] \xa7a(?P<message>.*)$'}),
 			('modmode',             {'regex': '^\xa7cYou are now in mod mode\.$',
 				                 'extra': {'enabled': True}}),
 			('vanish',              {'regex': '^\xa7cPoof!$',
 				                 'extra': {'enabled': True}}),
+			('vanish',              {'regex': '^\xa7cYou have reappeared!$',
+			                         'extra': {'enabled': False}}),
+			('pickup',              {'regex': '^\xa7cEnabling Picking Up of Items$',
+			                         'extra': {'enabled': True}}),
+			('pickup',              {'regex': '^\xa7cDisabling Picking Up of Items$',
+			                         'extra': {'enabled': False}}),
+			('godmode',             {'regex': '^\xa7eGod mode enabled! Use /ungod to disable.$',
+			                         'extra': {'enabled': True}}),
 			('teleport',            {'regex': '^\xa77Teleporting\.\.\.$'}),
 			('kit',                 {'regex': '^\xa77Giving kit (?P<kit>.*)\.$'}),
 			
+			#WorldGuard
+			('banned_item',         {'regex': '^\xa77WG: \xa7d'+ username % 'player' + '\xa76 \((?P<action>\w+)\) \xa7f(?P<block>.+) \(#(?P<block_id>\d+)\)\.$'}),
+			
 			#MCCondom
-			('warning',             {'regex': '^\xa7c(?:\xa7a)?(?P<player>[0-9A-Za-z_]{1,16})(?:\xa7f)? \| Time on:(?P<time_on>\d+)mins \| Logins:(?P<logins>[0-9\-]+) \| Warns:(?P<warns>\d+)$',
+			('grief_warning',       {'regex': '^\xa7c'+ username % 'player' + ' \| Time on:(?P<time_on>\d+)mins \| Logins:(?P<logins>[0-9\-]+) \| Warns:(?P<warns>\d+)$',
 			                         'num'  : ['time_on', 'logins', 'warns']}),
+			('reach_warning',       {'regex': '^\xa7d'+ username % 'player' + ' broke a block at a distance of (?P<distance>[0-9\.]+)$',
+			                         'num'  : ['distance']}),
 			
 			#MCBouncer
-			('notes',               {'regex': '^\xa7a(?P<player>[0-9A-Za-z_]{1,16}) has (?P<count>\d+) notes?\.$',
+			('notes',               {'regex': '^\xa7a'+ username % 'player' + ' has (?P<count>\d+) notes?\.$',
 			                         'num'  : ['count']}),
 			
 			#ModTRS
@@ -59,15 +77,20 @@ class Plugin_Chat:
 				                 'extra': {'type': 'done'},
 				                 'num'  : ['req_id']}),
 			#Nocheat
-			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: Moving violation: (?P<player>[0-9A-Za-z_]{1,16}) from (?P<world>\w+) distance ' + triplet % ('x', 'y', 'z') + '$',
+			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: Moving violation: '+ username % 'player' + ' from (?P<world>\w+) distance ' + triplet % ('x', 'y', 'z') + '$',
 			                         'extra': {'type': 'moving_violation'},
 			                         'num'  : ['x','y','z']}),
-			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: Moving summary of last ~(?P<time>\d+) seconds: (?P<player>[0-9A-Za-z_]{1,16}) total Violations: ' + triplet % ('x','y','z') + '$',
+			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: Moving violation: '+ username % 'player' + ' from (?P<world>\w+) ' + triplet % ('x_from', 'y_from', 'z_from') + ' to ' + triplet % ('x_to', 'y_to', 'z_to') + ' distance ' + triplet % ('x_distance', 'y_distance', 'z_distance') + '$',
+			                         'extra': {'type': 'moving_violation'},
+			                         'num'  : ['x_from','y_from','z_from', 'x_to', 'y_to', 'z_to', 'x_distance', 'y_distance', 'z_distance']}),
+			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: Moving summary of last ~(?P<time>\d+) seconds: '+ username % 'player' + ' total Violations: ' + triplet % ('x','y','z') + '$',
 			                         'extra': {'type': 'moving_summary'},
 			                         'num':   ['time','x','y','z']}),
-			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: (?P<player>[0-9A-Za-z_]{1,16}) sent (?P<total_events>\d+) move events, but only (?P<allowed_events>\d+) were allowed\. Speedhack\?$',
+			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: '+ username % 'player' + ' sent (?P<total_events>\d+) move events, but only (?P<allowed_events>\d+) were allowed\. Speedhack\?$',
 			                         'extra': {'type': 'speedhack'},
 			                         'num':   ['total_events', 'allowed_events']}),
+			('nocheat',             {'regex': '^\[(?:[A-Z]+)\] NC: Nuke: '+ username % 'player' + ' tried to nuke the world$',
+			                         'extra': {'type': 'nuke'}}),
 			#Useless shit
 			('null',                {'regex': '^\xa75\xa76\xa74\xa75$'}),
 			('null',                {'regex': '^\xa7cWelcome, [0-9A-Za-z_]{1,16}\xa7c! $'}),
@@ -75,7 +98,13 @@ class Plugin_Chat:
 			('null',                {'regex': '^Visit nerd\.nu for information on other servers\. $'}),
 			('null',                {'regex': '^-$'}),
 			('null',                {'regex': '^\xa7b[0-9A-Za-z_]{1,16}, craft a sword or something\.$'}),
-			('null',                {'regex': '^\xa7b[0-9A-Za-z_]{1,16} is getting killed out there\.$'})
+			('null',                {'regex': '^\xa7b[0-9A-Za-z_]{1,16} is getting killed out there\.$'}),
+			('null',                {'regex': '^\xa77You are now marked as away\.$'}),
+			('null',                {'regex': '^\xa77You are no longer marked as away\.$'}),
+			
+			#Slime death
+			('player_death',        {'regex': '^\xa74A rare slime found '+ username % 'player' + '\.  They didn\'t win\.$',
+			                         'extra': {'cause': 'slime'}})
 		]
 		deaths = {
 			'cactus':        ['got a little too close to a cactus', 'tried to hug a cactus'],
@@ -88,11 +117,12 @@ class Plugin_Chat:
 			'water':         ['needs swimming lessons', 'forgot to come up for air', 'has drowned'],
 			'zombie pigman': ['lost the fight against a zombie pig'],
 			'zombie':        ['was punched to death by zombies', 'was left 4 dead'],
-			'unknown':       ['died from unknown causes']
+			'unknown':       ['died from unknown causes'],
+			'suffocation':   ['was buried alive', 'suffocated']
 		}
 		for cause, strings in deaths.items():
 			for s in strings:
-				self.handlers.append(('player_death', {'regex': '^\xa74(?P<player>[0-9A-Za-z_]{1,16}) %s\.$' % s, 'extra': {'cause': cause}}))
+				self.handlers.append(('player_death', {'regex': '^\xa74'+ username % 'player' + ' %s\.$' % s, 'extra': {'cause': cause}}))
 		
 		self.handlers.append(('unknown', {'regex': '^(?P<text>.*)$'}))
 		for h in self.handlers:
@@ -125,7 +155,7 @@ class Plugin_Chat:
 		#PART ONE: examine the first part to see if it wraps
 		more = False
 		text = args[-1]
-		text += "@" 
+		text +="@"
 		if len(text) > chat_length:
 			more = True
 		else:

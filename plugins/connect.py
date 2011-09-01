@@ -83,7 +83,7 @@ class Plugin_Connect():
 				
 		if self.mode == "disconnect":
 			if item.ident == 0x02 and item.direction == packet_decoder.TO_CLIENT:
-				#print "Received handshake..."
+				print "Received handshake..."
 				item.transmit = False
 				item.process = False
 				url = "http://www.minecraft.net/game/joinserver.jsp?user=%s&sessionId=%s&serverId=%s" % (self.username, self.session.core.get_session_id(self.username), item.data['connection_hash'])
@@ -91,10 +91,10 @@ class Plugin_Connect():
 				if response != 'OK':
 					print "joinserver.jsp failed!"
 					sys.exit(1)
-				#print "Sending login..."
+				print "Sending login..."
 				self.session.gen(0x01, packet_decoder.TO_SERVER, {'username': self.username, 'protocol_version': self.protocol_version, 'map_seed':0, 'dimension':0})
 			if item.ident == 0x01:
-				#print "Received login..."
+				print "Received login..."
 				item.transmit = False
 				item.process = False
 				#self.core.client.listen = True
@@ -108,7 +108,7 @@ class Plugin_Connect():
 				else:
 					self.new_chunks.discard((item.data['x'], item.data['z']))
 			if item.ident == 0x0D:
-				#print "Spawning..."
+				print "Loading/unloading chunks"
 				#Load and unload chunks
 				unload  = set(self.current_chunks)
 				load    = set(self.new_chunks)
@@ -121,8 +121,10 @@ class Plugin_Connect():
 				self.current_chunks = self.new_chunks
 				self.new_chunks = set()
 				#Set slot
+				print "Setting slot"
 				self.session.gen(0x10, packet_decoder.TO_SERVER, {'slot': self.slot})
 				#Re-engage client
+				print "Reconnecting client!"
 				self.session.listen[packet_decoder.NODE_CLIENT] = True
 				self.mode = "normal"
 			return
@@ -183,13 +185,15 @@ class Plugin_Connect():
 	#RECONNECTED:
 	# Transform all entity IDs.
 	def reconnect(self):
-		print "Reconnecting..."
+		print "Clearing entities"
 		for entity_id in self.known_entity_ids:
 			if entity_id != self.client_entity_id: #Don't destroy the current player in the case of a collision
 				self.session.gen(0x1D, packet_decoder.SERVER_TO_CLIENT, {'entity_id': entity_id})
 		self.known_entity_ids.clear()
+		print "Connecting to server..."
 		#self.session.gen(0x03, packet_decoder.SERVER_TO_CLIENT, {'message': u'\xa2Connecting...'})
 		self.session.connect()
 		self.session.listen[packet_decoder.NODE_SERVER] = True
+		print "Sending handshake..."
 		self.session.gen(0x02, packet_decoder.CLIENT_TO_SERVER, {'username': self.username})
 
