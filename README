@@ -1,0 +1,36 @@
+Ashitaka is a library for packet sniffing and manipulation in the game Minecraft. 
+
+It is to be used for the forces of good, namely providing convenient access to common moderation and administration tools.
+
+Ashitaka can be used as:
+ - a client
+ - a client-side proxy for vanilla client
+ - a server-side proxy to one or more servers
+
+Current features:
+ - Auto-reconnect on server disconnect
+ - Chat parsing
+ 
+Upcoming features
+ - Switch server in-game
+ - ModTRS support
+    - Full GUI
+    - "Quiet" mode when dealing with requests, where outgoing chat messages are sent as PMs to the request's owner, and joins/parts/chat messages etc are surpressed
+    - Request parsing, so if a request contains the word lava, you get /i'd lava and glass
+    - /next will /done the current req, /claim the next free, /tp-id and /check to get full text.
+    - /modmode now toggles (rather than using on/off)
+ - Chat parsing
+    - All lines of text parsed (chat messages, mccondom, lb, modtrs, nocheat, etc) into useful messages, which can be read and optionally surpressed by plugins
+    - Example usage: surpress mod-related stuff while pvping, rather than switching to an alt
+ - IRC server
+    - Ashitaka's IRC plugin spawns a local IRC server, where IRC users and Minecraft users have a 1-to-1 correspondence. 
+    - Thus, you get tabbed PMs
+    - A convenient way of monitoring chat
+    - Talk in-game without leaving your irc client :3
+ - GUI user list
+    - right click > kick, ban. You get a menu of choices (griefing, flyhacking, etc)
+ - LB support
+    - GUI interface to /lb, with options for detecting certain blocks or specific radiuses. 
+    - Uses heuristics to suggest possible actions, so rolling back and banning an obvious griefer is as easy as placing coal ore and typing "yes"
+ - Automatic screenshot organisation
+    - screenshots are tagged with ban reasons and the player's name (detected via recent lb commands or proximity)
